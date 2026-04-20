@@ -283,6 +283,7 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                     ),
                   ],
                   // 合集
+                      ],
                     ),
                   ),
                   if (!isLoading &&
