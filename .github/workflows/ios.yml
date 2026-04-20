@@ -9,11 +9,19 @@ on:
         default: ""
         type: string
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "tag"
+        required: false
+        default: ""
+        type: string
 
 jobs:
   build-macos-app:
     name: Release IOS
     runs-on: macos-26
+    env:
+      RELEASE_TAG: ${{ inputs.tag != '' && inputs.tag || github.event.inputs.tag }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -36,19 +44,34 @@ jobs:
         continue-on-error: true
 
       - name: Build iOS
+        shell: bash
         run: |
-          flutter build ios --release --no-codesign --dart-define-from-file=pili_release.json
-          ln -sf ./build/ios/iphoneos Payload
-          # make AltSign happy...
+          set -euxo pipefail
+          flutter build ios --release --no-codesign --config-only --dart-define-from-file=pili_release.json
+          xcodebuild \
+            -workspace ios/Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination generic/platform=iOS \
+            -derivedDataPath build/ios/derived_data \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM="" \
+            build
+          rm -rf Payload
+          mkdir -p Payload
+          cp -R build/ios/derived_data/Build/Products/Release-iphoneos/Runner.app Payload/
           find Payload/Runner.app/Frameworks -type d -name "*.framework" -exec codesign --force --sign - --preserve-metadata=identifier,entitlements {} \;
-          zip -r9 PiliPlus_ios_${{env.version}}.ipa Payload/Runner.app
+          zip -r9 "PiliPlus_ios_${{ env.version }}.ipa" Payload/Runner.app
 
       - name: Release
-        if: ${{ github.event.inputs.tag != '' }}
+        if: ${{ env.RELEASE_TAG != '' }}
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.event.inputs.tag }}
-          name: ${{ github.event.inputs.tag }}
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: ${{ env.RELEASE_TAG }}
           files: |
             PiliPlus_ios_*.ipa
 
