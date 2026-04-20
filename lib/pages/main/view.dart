@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/common/widgets/app_store_surface.dart';
 import 'package:PiliPlus/common/widgets/floating_navigation_bar.dart';
 import 'package:PiliPlus/common/widgets/flutter/pop_scope.dart';
 import 'package:PiliPlus/common/widgets/flutter/tabs.dart';
@@ -461,15 +462,18 @@ class _MainAppState extends PopScopeState<MainApp>
     }
 
     child = Scaffold(
+      backgroundColor: Colors.transparent,
       extendBody: true,
       resizeToAvoidBottomInset: false,
       appBar: AppBar(toolbarHeight: 0),
-      body: Padding(
-        padding: EdgeInsets.only(
-          left: _mainController.useBottomNav ? _padding.left : 0.0,
-          right: _padding.right,
+      body: AppStoreBackground(
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: _mainController.useBottomNav ? _padding.left : 0.0,
+            right: _padding.right,
+          ),
+          child: child,
         ),
-        child: child,
       ),
       bottomNavigationBar: bottomNav,
     );

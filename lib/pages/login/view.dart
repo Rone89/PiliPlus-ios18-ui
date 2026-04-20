@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/dial_prefix.dart';
+import 'package:PiliPlus/common/widgets/app_store_surface.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/loading_widget.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
@@ -519,7 +520,9 @@ class _LoginPageState extends State<LoginPage> {
         const EdgeInsets.only(bottom: 25);
     final isLandscape = !MediaQuery.sizeOf(context).isPortrait;
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
         leading: IconButton(
           tooltip: '关闭',
           icon: const Icon(Icons.close_outlined),
@@ -582,21 +585,50 @@ class _LoginPageState extends State<LoginPage> {
               )
             : null,
       ),
-      body: NotificationListener<ScrollStartNotification>(
-        onNotification: (notification) {
-          if (notification.metrics.axis == Axis.horizontal) {
-            FocusScope.of(context).unfocus();
-          }
-          return false;
-        },
-        child: tabBarView(
-          controller: _loginPageCtr.tabController,
-          children: [
-            tabViewOuter(loginByPassword(theme)),
-            tabViewOuter(loginBySmS(theme)),
-            tabViewOuter(loginByQRCode(theme)),
-            tabViewOuter(loginByCookie(theme)),
-          ],
+      body: AppStoreBackground(
+        child: NotificationListener<ScrollStartNotification>(
+          onNotification: (notification) {
+            if (notification.metrics.axis == Axis.horizontal) {
+              FocusScope.of(context).unfocus();
+            }
+            return false;
+          },
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Sign in',
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Keep the same account methods with a cleaner iOS-style shell.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.outline,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: tabBarView(
+                  controller: _loginPageCtr.tabController,
+                  children: [
+                    tabViewOuter(loginByPassword(theme)),
+                    tabViewOuter(loginBySmS(theme)),
+                    tabViewOuter(loginByQRCode(theme)),
+                    tabViewOuter(loginByCookie(theme)),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -604,8 +636,19 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget tabViewOuter(Widget child) {
     return SingleChildScrollView(
-      padding: padding,
-      child: child.constraintWidth(),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
+      child: Padding(
+        padding: padding,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: FrostedCard(
+              padding: const EdgeInsets.fromLTRB(10, 4, 10, 18),
+              child: child.constraintWidth(),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

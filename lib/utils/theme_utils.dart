@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/common/widgets/app_store_surface.dart';
 import 'package:PiliPlus/main.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
@@ -19,9 +20,21 @@ abstract final class ThemeUtils {
         ? null
         : FontWeight.values[appFontWeight];
     late final textStyle = TextStyle(fontWeight: fontWeight);
+    final scaffoldBackground = Color.alphaBlend(
+      colorScheme.primary.withValues(alpha: isDark ? 0.05 : 0.035),
+      colorScheme.surface,
+    );
+    final inputBorder = OutlineInputBorder(
+      borderRadius: AppStoreSurfaces.sectionRadius,
+      borderSide: BorderSide(
+        color: colorScheme.outline.withValues(alpha: isDark ? 0.2 : 0.08),
+      ),
+    );
     ThemeData themeData = ThemeData(
       colorScheme: colorScheme,
       useMaterial3: true,
+      scaffoldBackgroundColor: scaffoldBackground,
+      canvasColor: scaffoldBackground,
       textTheme: fontWeight == null
           ? null
           : TextTheme(
@@ -42,22 +55,54 @@ abstract final class ThemeUtils {
               labelSmall: textStyle,
             ),
       tabBarTheme: fontWeight == null
-          ? null
-          : TabBarThemeData(labelStyle: textStyle),
+          ? TabBarThemeData(
+              dividerColor: Colors.transparent,
+              labelColor: colorScheme.onSurface,
+              unselectedLabelColor: colorScheme.outline,
+              indicatorSize: TabBarIndicatorSize.tab,
+              indicator: BoxDecoration(
+                borderRadius: AppStoreSurfaces.pillRadius,
+                color: AppStoreSurfaces.frostedColor(colorScheme),
+                boxShadow: AppStoreSurfaces.shadow(colorScheme, opacity: 0.08),
+              ),
+              splashBorderRadius: AppStoreSurfaces.pillRadius,
+            )
+          : TabBarThemeData(
+              labelStyle: textStyle,
+              dividerColor: Colors.transparent,
+              labelColor: colorScheme.onSurface,
+              unselectedLabelColor: colorScheme.outline,
+              indicatorSize: TabBarIndicatorSize.tab,
+              indicator: BoxDecoration(
+                borderRadius: AppStoreSurfaces.pillRadius,
+                color: AppStoreSurfaces.frostedColor(colorScheme),
+                boxShadow: AppStoreSurfaces.shadow(colorScheme, opacity: 0.08),
+              ),
+              splashBorderRadius: AppStoreSurfaces.pillRadius,
+            ),
       appBarTheme: AppBarTheme(
         elevation: 0,
         titleSpacing: 0,
         centerTitle: false,
         scrolledUnderElevation: 0,
-        backgroundColor: colorScheme.surface,
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         titleTextStyle: TextStyle(
-          fontSize: 16,
+          fontSize: 17,
           color: colorScheme.onSurface,
-          fontWeight: fontWeight,
+          fontWeight: fontWeight ?? FontWeight.w600,
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        surfaceTintColor: isDynamic ? colorScheme.onSurfaceVariant : null,
+        backgroundColor: AppStoreSurfaces.frostedColor(
+          colorScheme,
+          lightOpacity: 0.9,
+          darkOpacity: 0.84,
+        ),
+        surfaceTintColor: Colors.transparent,
+        indicatorColor: colorScheme.primaryContainer.withValues(alpha: 0.9),
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        elevation: 0,
       ),
       snackBarTheme: SnackBarThemeData(
         actionTextColor: colorScheme.primary,
@@ -67,16 +112,19 @@ abstract final class ThemeUtils {
         elevation: 20,
       ),
       popupMenuTheme: PopupMenuThemeData(
-        surfaceTintColor: isDynamic ? colorScheme.onSurfaceVariant : null,
+        surfaceTintColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(
+          borderRadius: AppStoreSurfaces.sectionRadius,
+        ),
       ),
       cardTheme: CardThemeData(
-        elevation: 1,
+        elevation: 0,
         margin: EdgeInsets.zero,
-        surfaceTintColor: isDynamic
-            ? colorScheme.onSurfaceVariant
-            : isDark
-            ? colorScheme.onSurfaceVariant
-            : null,
+        color: AppStoreSurfaces.frostedColor(colorScheme),
+        shape: const RoundedRectangleBorder(
+          borderRadius: AppStoreSurfaces.cardRadius,
+        ),
+        surfaceTintColor: Colors.transparent,
         shadowColor: Colors.transparent,
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(
@@ -90,14 +138,62 @@ abstract final class ThemeUtils {
           color: colorScheme.onSurface,
           fontWeight: fontWeight,
         ),
-        backgroundColor: colorScheme.surface,
+        backgroundColor: AppStoreSurfaces.frostedColor(colorScheme),
+        shape: const RoundedRectangleBorder(
+          borderRadius: AppStoreSurfaces.cardRadius,
+        ),
         constraints: const BoxConstraints(minWidth: 280, maxWidth: 420),
       ),
       bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: colorScheme.surface,
+        backgroundColor: AppStoreSurfaces.frostedColor(colorScheme),
+        surfaceTintColor: Colors.transparent,
         shape: const RoundedRectangleBorder(
           borderRadius: Style.bottomSheetRadius,
         ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: colorScheme.surfaceContainerHighest.withValues(
+          alpha: isDark ? 0.42 : 0.52,
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 16,
+        ),
+        border: inputBorder,
+        enabledBorder: inputBorder,
+        focusedBorder: inputBorder.copyWith(
+          borderSide: BorderSide(color: colorScheme.primary.withValues(alpha: 0.3)),
+        ),
+        floatingLabelStyle: TextStyle(
+          color: colorScheme.primary,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          shape: const RoundedRectangleBorder(
+            borderRadius: AppStoreSurfaces.pillRadius,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          shape: const RoundedRectangleBorder(
+            borderRadius: AppStoreSurfaces.pillRadius,
+          ),
+          side: BorderSide(
+            color: colorScheme.outline.withValues(alpha: isDark ? 0.25 : 0.12),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        ),
+      ),
+      listTileTheme: ListTileThemeData(
+        shape: const RoundedRectangleBorder(
+          borderRadius: AppStoreSurfaces.sectionRadius,
+        ),
+        iconColor: colorScheme.onSurfaceVariant,
       ),
       // ignore: deprecated_member_use
       sliderTheme: const SliderThemeData(year2023: false),

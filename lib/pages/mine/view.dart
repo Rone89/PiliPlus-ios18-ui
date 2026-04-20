@@ -2,9 +2,10 @@ import 'dart:async';
 
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/common/widgets/app_store_surface.dart';
 import 'package:PiliPlus/common/widgets/flutter/list_tile.dart';
 import 'package:PiliPlus/common/widgets/flutter/refresh_indicator.dart';
-import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/common\widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/models_new/fav/fav_folder/list.dart';
@@ -69,21 +70,23 @@ class _MediaPageState extends CommonPageState<MinePage>
     return Column(
       children: [
         Padding(
-          padding: const .symmetric(vertical: 10),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
           child: _buildHeaderActions,
         ),
         Expanded(
           child: Material(
-            type: .transparency,
+            type: MaterialType.transparency,
             child: refreshIndicator(
               onRefresh: controller.onRefresh,
               child: onBuild(
                 ListView(
-                  padding: const .only(bottom: 100),
+                  padding: const EdgeInsets.fromLTRB(16, 2, 16, 120),
                   physics: const AlwaysScrollableScrollPhysics(),
                   children: [
                     _buildUserInfo(theme, secondary),
+                    const SizedBox(height: 14),
                     _buildActions(secondary),
+                    const SizedBox(height: 16),
                     Obx(
                       () => controller.loadingState.value is Loading
                           ? const SizedBox.shrink()
@@ -100,46 +103,63 @@ class _MediaPageState extends CommonPageState<MinePage>
   }
 
   Widget _buildActions(Color primary) {
-    return Row(
-      mainAxisAlignment: .spaceEvenly,
-      children: controller.list
-          .map(
-            (e) => Flexible(
-              child: InkWell(
-                onTap: e.onTap,
-                borderRadius: Style.mdRadius,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 80),
-                  child: AspectRatio(
-                    aspectRatio: 1,
-                    child: Column(
-                      spacing: 6,
-                      mainAxisSize: .min,
-                      mainAxisAlignment: .center,
-                      children: [
-                        Icon(size: e.size, e.icon, color: primary),
-                        Text(
-                          e.title,
-                          style: const TextStyle(fontSize: 13),
+    return FrostedCard(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: controller.list
+            .map(
+              (e) => Flexible(
+                child: InkWell(
+                  onTap: e.onTap,
+                  borderRadius: AppStoreSurfaces.sectionRadius,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 96),
+                    child: AspectRatio(
+                      aspectRatio: 1,
+                      child: Container(
+                        margin: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          borderRadius: AppStoreSurfaces.sectionRadius,
+                          color: primary.withValues(alpha: 0.08),
                         ),
-                      ],
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 42,
+                              height: 42,
+                              decoration: BoxDecoration(
+                                color: primary.withValues(alpha: 0.14),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(size: e.size, e.icon, color: primary),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              e.title,
+                              style: const TextStyle(fontSize: 13),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          )
-          .toList(),
+            )
+            .toList(),
+      ),
     );
   }
 
   Widget get _buildHeaderActions {
     const iconSize = 22.0;
     const padding = EdgeInsets.all(8);
-    const style = ButtonStyle(tapTargetSize: .shrinkWrap);
+    const style = ButtonStyle(tapTargetSize: MaterialTapTargetSize.shrinkWrap);
     return Row(
-      spacing: 5,
-      mainAxisAlignment: .end,
+      spacing: 8,
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
         if (widget.showBackBtn)
           const Expanded(
@@ -152,75 +172,97 @@ class _MediaPageState extends CommonPageState<MinePage>
             ),
           ),
         if (!_mainController.hasHome) ...[
-          IconButton(
-            iconSize: iconSize,
-            padding: padding,
-            style: style,
-            tooltip: '搜索',
-            onPressed: () => Get.toNamed('/search'),
-            icon: const Icon(Icons.search),
+          _headerAction(
+            child: IconButton(
+              iconSize: iconSize,
+              padding: padding,
+              style: style,
+              tooltip: 'Search',
+              onPressed: () => Get.toNamed('/search'),
+              icon: const Icon(Icons.search),
+            ),
           ),
           msgBadge(_mainController),
         ],
         if (GStorage.reply != null)
-          IconButton(
-            iconSize: iconSize,
-            padding: padding,
-            style: style,
-            tooltip: '评论记录',
-            onPressed: () => Get.toNamed('/myReply'),
-            icon: const Icon(Icons.message_outlined),
+          _headerAction(
+            child: IconButton(
+              iconSize: iconSize,
+              padding: padding,
+              style: style,
+              tooltip: 'Reply history',
+              onPressed: () => Get.toNamed('/myReply'),
+              icon: const Icon(Icons.message_outlined),
+            ),
           ),
         Obx(
           () {
             final anonymity = MineController.anonymity.value;
-            return IconButton(
-              iconSize: iconSize,
-              padding: padding,
-              style: style,
-              tooltip: "${anonymity ? '退出' : '进入'}无痕模式",
-              onPressed: MineController.onChangeAnonymity,
-              icon: anonymity
-                  ? const Icon(MdiIcons.incognito)
-                  : const Icon(MdiIcons.incognitoOff),
+            return _headerAction(
+              child: IconButton(
+                iconSize: iconSize,
+                padding: padding,
+                style: style,
+                tooltip: "${anonymity ? 'Exit' : 'Enter'} incognito",
+                onPressed: MineController.onChangeAnonymity,
+                icon: anonymity
+                    ? const Icon(MdiIcons.incognito)
+                    : const Icon(MdiIcons.incognitoOff),
+              ),
             );
           },
         ),
-        IconButton(
-          iconSize: iconSize,
-          padding: padding,
-          style: style,
-          tooltip: '设置账号模式',
-          onPressed: () => LoginPageController.switchAccountDialog(context),
-          icon: const Icon(Icons.switch_account_outlined),
+        _headerAction(
+          child: IconButton(
+            iconSize: iconSize,
+            padding: padding,
+            style: style,
+            tooltip: 'Switch account',
+            onPressed: () => LoginPageController.switchAccountDialog(context),
+            icon: const Icon(Icons.switch_account_outlined),
+          ),
         ),
         Obx(
-          () {
-            return IconButton(
+          () => _headerAction(
+            child: IconButton(
               iconSize: iconSize,
               padding: padding,
               style: style,
-              tooltip: '切换至${controller.nextThemeType.desc}主题',
+              tooltip: 'Switch theme',
               onPressed: controller.onChangeTheme,
               icon: controller.themeType.value.icon,
-            );
-          },
+            ),
+          ),
         ),
-        IconButton(
-          iconSize: iconSize,
-          padding: padding,
-          style: style,
-          tooltip: '设置',
-          onPressed: () => Get.toNamed('/setting', preventDuplicates: false),
-          icon: const Icon(Icons.settings_outlined),
+        _headerAction(
+          child: IconButton(
+            iconSize: iconSize,
+            padding: padding,
+            style: style,
+            tooltip: 'Settings',
+            onPressed: () => Get.toNamed('/setting', preventDuplicates: false),
+            icon: const Icon(Icons.settings_outlined),
+          ),
         ),
-        const SizedBox(width: 16),
       ],
     );
   }
 
+  Widget _headerAction({required Widget child}) {
+    return FrostedCard(
+      borderRadius: AppStoreSurfaces.pillRadius,
+      blur: 16,
+      elevated: false,
+      child: SizedBox(
+        width: 42,
+        height: 42,
+        child: child,
+      ),
+    );
+  }
+
   Widget _buildUserInfo(ThemeData theme, Color secondary) {
-    final style = TextStyle(
+    final countStyle = TextStyle(
       fontSize: theme.textTheme.titleMedium!.fontSize,
       fontWeight: FontWeight.bold,
     );
@@ -242,199 +284,198 @@ class _MediaPageState extends CommonPageState<MinePage>
       final hasLevel = levelInfo != null;
       final isVip = userInfo.vipStatus != null && userInfo.vipStatus! > 0;
       final userStat = controller.userStat.value;
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          GestureDetector(
-            behavior: .opaque,
-            onTap: controller.onLogin,
-            onLongPress: () {
-              Feedback.forLongPress(context);
-              controller.onLogin(true);
-            },
-            onSecondaryTap: PlatformUtils.isMobile
-                ? null
-                : () => controller.onLogin(true),
-            child: Row(
-              mainAxisSize: .min,
-              children: [
-                const SizedBox(width: 20),
-                userInfo.face != null
-                    ? Stack(
-                        clipBehavior: .none,
-                        children: [
-                          NetworkImgLayer(
-                            src: userInfo.face,
-                            type: .avatar,
-                            width: 55,
-                            height: 55,
-                          ),
-                          if (isVip)
-                            Positioned(
-                              right: -1,
-                              bottom: -2,
-                              child: Image.asset(
-                                Assets.vipIcon,
-                                height: 19,
-                                cacheHeight: 19.cacheSize(context),
-                                semanticLabel: "大会员",
-                              ),
+      return FrostedCard(
+        padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: controller.onLogin,
+              onLongPress: () {
+                Feedback.forLongPress(context);
+                controller.onLogin(true);
+              },
+              onSecondaryTap: PlatformUtils.isMobile
+                  ? null
+                  : () => controller.onLogin(true),
+              child: Row(
+                children: [
+                  userInfo.face != null
+                      ? Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: AppStoreSurfaces.shadow(
+                              theme.colorScheme,
+                              opacity: 0.12,
                             ),
-                        ],
-                      )
-                    : ClipOval(
-                        child: Image.asset(
-                          width: 55,
-                          height: 55,
-                          cacheHeight: 55.cacheSize(context),
-                          Assets.avatarPlaceHolder,
-                          semanticLabel: "默认头像",
+                          ),
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              NetworkImgLayer(
+                                src: userInfo.face,
+                                type: .avatar,
+                                width: 62,
+                                height: 62,
+                              ),
+                              if (isVip)
+                                Positioned(
+                                  right: -1,
+                                  bottom: -2,
+                                  child: Image.asset(
+                                    Assets.vipIcon,
+                                    height: 19,
+                                    cacheHeight: 19.cacheSize(context),
+                                    semanticLabel: 'VIP',
+                                  ),
+                                ),
+                            ],
+                          ),
+                        )
+                      : ClipOval(
+                          child: Image.asset(
+                            width: 62,
+                            height: 62,
+                            cacheHeight: 62.cacheSize(context),
+                            Assets.avatarPlaceHolder,
+                            semanticLabel: 'Default avatar',
+                          ),
                         ),
-                      ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: .min,
-                    mainAxisAlignment: .center,
-                    crossAxisAlignment: .start,
-                    children: [
-                      Row(
-                        spacing: 6,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              userInfo.uname ?? '点击登录',
-                              style: theme.textTheme.titleMedium!.copyWith(
-                                height: 1,
-                                color: isVip && userInfo.vipType == 2
-                                    ? theme.colorScheme.vipColor
-                                    : null,
-                              ),
-                              maxLines: 1,
-                              overflow: .ellipsis,
-                            ),
-                          ),
-                          Image.asset(
-                            Utils.levelName(
-                              levelInfo?.currentLevel ?? 0,
-                              isSeniorMember: userInfo.isSeniorMember == 1,
-                            ),
-                            height: 10,
-                            cacheHeight: 10.cacheSize(context),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text.rich(
-                        TextSpan(
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           children: [
-                            TextSpan(
-                              text: '硬币 ',
-                              style: coinLabelStyle,
+                            Flexible(
+                              child: Text(
+                                userInfo.uname ?? 'Tap to sign in',
+                                style: theme.textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: isVip && userInfo.vipType == 2
+                                      ? theme.colorScheme.vipColor
+                                      : null,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                            TextSpan(
-                              text: userInfo.money?.toString() ?? '-',
-                              style: coinValStyle,
-                            ),
-                            TextSpan(
-                              text: "      经验 ",
-                              style: coinLabelStyle,
-                            ),
-                            TextSpan(
-                              text: levelInfo?.currentExp?.toString() ?? '-',
-                              style: coinValStyle,
-                            ),
-                            TextSpan(
-                              text: "/${levelInfo?.nextExp ?? '-'}",
-                              style: coinLabelStyle,
+                            const SizedBox(width: 6),
+                            Image.asset(
+                              Utils.levelName(
+                                levelInfo?.currentLevel ?? 0,
+                                isSeniorMember: userInfo.isSeniorMember == 1,
+                              ),
+                              height: 11,
+                              cacheHeight: 11.cacheSize(context),
                             ),
                           ],
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 225),
-                        child: LinearProgressIndicator(
-                          minHeight: 2.25,
+                        const SizedBox(height: 10),
+                        Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(text: 'Coins ', style: coinLabelStyle),
+                              TextSpan(
+                                text: userInfo.money?.toString() ?? '-',
+                                style: coinValStyle,
+                              ),
+                              TextSpan(text: '      EXP ', style: coinLabelStyle),
+                              TextSpan(
+                                text: levelInfo?.currentExp?.toString() ?? '-',
+                                style: coinValStyle,
+                              ),
+                              TextSpan(
+                                text: "/${levelInfo?.nextExp ?? '-'}",
+                                style: coinLabelStyle,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        LinearProgressIndicator(
+                          minHeight: 4,
                           value: hasLevel
                               ? levelInfo.currentExp! / levelInfo.nextExp!
                               : 0,
                           backgroundColor: theme.colorScheme.outline.withValues(
-                            alpha: 0.4,
+                            alpha: 0.18,
                           ),
                           valueColor: AlwaysStoppedAnimation<Color>(secondary),
                           stopIndicatorColor: Colors.transparent,
+                          borderRadius: AppStoreSurfaces.pillRadius,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                _statButton(
+                  count: userStat.dynamicCount,
+                  countStyle: countStyle,
+                  name: 'Dynamics',
+                  labelStyle: labelStyle,
+                  onTap: () => controller.push('memberDynamics'),
                 ),
-                const SizedBox(width: 20),
+                const SizedBox(width: 10),
+                _statButton(
+                  count: userStat.following,
+                  countStyle: countStyle,
+                  name: 'Following',
+                  labelStyle: labelStyle,
+                  onTap: () => controller.push('follow'),
+                ),
+                const SizedBox(width: 10),
+                _statButton(
+                  count: userStat.follower,
+                  countStyle: countStyle,
+                  name: 'Followers',
+                  labelStyle: labelStyle,
+                  onTap: () => controller.push('fan'),
+                ),
               ],
             ),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: .spaceEvenly,
-            children: [
-              _btn(
-                count: userStat.dynamicCount,
-                countStyle: style,
-                name: '动态',
-                labelStyle: labelStyle,
-                onTap: () => controller.push('memberDynamics'),
-              ),
-              _btn(
-                count: userStat.following,
-                countStyle: style,
-                name: '关注',
-                labelStyle: labelStyle,
-                onTap: () => controller.push('follow'),
-              ),
-              _btn(
-                count: userStat.follower,
-                countStyle: style,
-                name: '粉丝',
-                labelStyle: labelStyle,
-                onTap: () => controller.push('fan'),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       );
     });
   }
 
-  Widget _btn({
+  Widget _statButton({
     required int? count,
     required TextStyle countStyle,
     required String name,
     required TextStyle? labelStyle,
     required VoidCallback onTap,
   }) {
-    return Flexible(
+    return Expanded(
       child: InkWell(
         onTap: onTap,
-        borderRadius: Style.mdRadius,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 80),
-          child: AspectRatio(
-            aspectRatio: 1,
-            child: Column(
-              spacing: 4,
-              mainAxisSize: .min,
-              mainAxisAlignment: .center,
-              children: [
-                Text(
-                  count?.toString() ?? '-',
-                  style: countStyle,
-                ),
-                Text(
-                  name,
-                  style: labelStyle,
-                ),
-              ],
-            ),
+        borderRadius: AppStoreSurfaces.sectionRadius,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            borderRadius: AppStoreSurfaces.sectionRadius,
+            color: Colors.white.withValues(alpha: 0.04),
+          ),
+          child: Column(
+            children: [
+              Text(
+                count?.toString() ?? '-',
+                style: countStyle,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                name,
+                style: labelStyle,
+              ),
+            ],
           ),
         ),
       ),
@@ -447,54 +488,53 @@ class _MediaPageState extends CommonPageState<MinePage>
   );
 
   Widget _buildFav(ThemeData theme, Color secondary) {
-    return Column(
-      children: [
-        Divider(
-          height: 20,
-          color: theme.dividerColor.withValues(alpha: 0.1),
-        ),
-        ListTile(
-          onTap: () => Get.toNamed('/fav')?.whenComplete(_autoRefresh),
-          dense: true,
-          title: Padding(
-            padding: const EdgeInsets.only(left: 10),
-            child: Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: '我的收藏  ',
-                    style: TextStyle(
-                      fontSize: theme.textTheme.titleMedium!.fontSize,
-                      fontWeight: .bold,
-                    ),
-                  ),
-                  if (controller.favFolderCount != null)
+    return FrostedCard(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Column(
+        children: [
+          ListTile(
+            onTap: () => Get.toNamed('/fav')?.whenComplete(_autoRefresh),
+            dense: true,
+            title: Padding(
+              padding: const EdgeInsets.only(left: 10),
+              child: Text.rich(
+                TextSpan(
+                  children: [
                     TextSpan(
-                      text: "${controller.favFolderCount}  ",
+                      text: 'Favorites  ',
                       style: TextStyle(
-                        fontSize: theme.textTheme.titleSmall!.fontSize,
+                        fontSize: theme.textTheme.titleMedium!.fontSize,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (controller.favFolderCount != null)
+                      TextSpan(
+                        text: "${controller.favFolderCount}  ",
+                        style: TextStyle(
+                          fontSize: theme.textTheme.titleSmall!.fontSize,
+                          color: secondary,
+                        ),
+                      ),
+                    WidgetSpan(
+                      child: Icon(
+                        Icons.arrow_forward_ios,
+                        size: 18,
                         color: secondary,
                       ),
                     ),
-                  WidgetSpan(
-                    child: Icon(
-                      Icons.arrow_forward_ios,
-                      size: 18,
-                      color: secondary,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
+            trailing: IconButton(
+              tooltip: 'Refresh',
+              onPressed: controller.onRefresh,
+              icon: const Icon(Icons.refresh, size: 20),
+            ),
           ),
-          trailing: IconButton(
-            tooltip: '刷新',
-            onPressed: controller.onRefresh,
-            icon: const Icon(Icons.refresh, size: 20),
-          ),
-        ),
-        _buildFavBody(theme, secondary, controller.loadingState.value),
-      ],
+          _buildFavBody(theme, secondary, controller.loadingState.value),
+        ],
+      ),
     );
   }
 
@@ -513,32 +553,33 @@ class _MediaPageState extends CommonPageState<MinePage>
           }
           bool flag = (controller.favFolderCount ?? 0) > favFolderList.length;
           return SizedBox(
-            height: 200,
+            height: 208,
             child: ListView.separated(
               controller: controller.scrollController,
-              padding: const .only(left: 20, top: 10, right: 20),
+              padding: const EdgeInsets.only(left: 20, top: 10, right: 20),
               itemCount: response.list.length + (flag ? 1 : 0),
               itemBuilder: (context, index) {
                 if (flag && index == favFolderList.length) {
                   return Padding(
-                    padding: const .only(bottom: 35),
+                    padding: const EdgeInsets.only(bottom: 35),
                     child: Center(
-                      child: IconButton(
-                        tooltip: '查看更多',
-                        style: ButtonStyle(
-                          padding: const WidgetStatePropertyAll(.zero),
-                          backgroundColor: WidgetStatePropertyAll(
-                            theme.colorScheme.secondaryContainer.withValues(
-                              alpha: 0.5,
+                      child: FrostedCard(
+                        borderRadius: AppStoreSurfaces.pillRadius,
+                        elevated: false,
+                        child: SizedBox(
+                          width: 44,
+                          height: 44,
+                          child: IconButton(
+                            tooltip: 'More',
+                            padding: EdgeInsets.zero,
+                            onPressed: () =>
+                                Get.toNamed('/fav')?.whenComplete(_autoRefresh),
+                            icon: Icon(
+                              Icons.arrow_forward_ios,
+                              size: 18,
+                              color: secondary,
                             ),
                           ),
-                        ),
-                        onPressed: () =>
-                            Get.toNamed('/fav')?.whenComplete(_autoRefresh),
-                        icon: Icon(
-                          Icons.arrow_forward_ios,
-                          size: 18,
-                          color: secondary,
                         ),
                       ),
                     ),
@@ -551,7 +592,7 @@ class _MediaPageState extends CommonPageState<MinePage>
                   );
                 }
               },
-              scrollDirection: .horizontal,
+              scrollDirection: Axis.horizontal,
               separatorBuilder: (_, _) => const SizedBox(width: 14),
             ),
           );
@@ -562,7 +603,7 @@ class _MediaPageState extends CommonPageState<MinePage>
         child: Center(
           child: Text(
             errMsg ?? '',
-            textAlign: .center,
+            textAlign: TextAlign.center,
           ),
         ),
       ),

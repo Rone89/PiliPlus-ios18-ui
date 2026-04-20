@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/assets.dart';
 import 'package:PiliPlus/common/constants.dart';
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/common/widgets/app_store_surface.dart';
 import 'package:PiliPlus/common/widgets/dialog/dialog.dart';
 import 'package:PiliPlus/common/widgets/flutter/selectable_text/selection_area.dart';
 import 'package:PiliPlus/common/widgets/flutter/selectable_text/text.dart';
@@ -116,6 +117,11 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  FrostedCard(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                   GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTap: () {},
@@ -277,6 +283,8 @@ class _UgcIntroPanelState extends State<UgcIntroPanel> {
                     ),
                   ],
                   // 合集
+                    ),
+                  ),
                   if (!isLoading &&
                       videoDetail.ugcSeason != null &&
                       (isPortrait ||

@@ -1,4 +1,5 @@
 import 'package:PiliPlus/common/style.dart';
+import 'package:PiliPlus/common/widgets/app_store_surface.dart';
 import 'package:PiliPlus/common/widgets/custom_height_widget.dart';
 import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
 import 'package:PiliPlus/common/widgets/scroll_physics.dart';
@@ -38,24 +39,30 @@ class _HomePageState extends CommonPageState<HomePage>
     Widget tabBar;
     if (_homeController.tabs.length > 1) {
       tabBar = Padding(
-        padding: const EdgeInsets.only(top: 4),
-        child: SizedBox(
-          height: 42,
-          width: double.infinity,
-          child: TabBar(
-            controller: _homeController.tabController,
-            tabs: _homeController.tabs.map((e) => Tab(text: e.label)).toList(),
-            isScrollable: true,
-            dividerColor: Colors.transparent,
-            dividerHeight: 0,
-            splashBorderRadius: Style.mdRadius,
-            tabAlignment: TabAlignment.center,
-            onTap: (_) {
-              feedBack();
-              if (!_homeController.tabController.indexIsChanging) {
-                _homeController.animateToTop();
-              }
-            },
+        padding: const EdgeInsets.fromLTRB(14, 6, 14, 2),
+        child: FrostedCard(
+          borderRadius: AppStoreSurfaces.pillRadius,
+          blur: 18,
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+          child: SizedBox(
+            height: 42,
+            width: double.infinity,
+            child: TabBar(
+              controller: _homeController.tabController,
+              tabs: _homeController.tabs.map((e) => Tab(text: e.label)).toList(),
+              isScrollable: true,
+              dividerColor: Colors.transparent,
+              dividerHeight: 0,
+              splashBorderRadius: AppStoreSurfaces.pillRadius,
+              tabAlignment: TabAlignment.center,
+              labelPadding: const EdgeInsets.symmetric(horizontal: 18),
+              onTap: (_) {
+                feedBack();
+                if (!_homeController.tabController.indexIsChanging) {
+                  _homeController.animateToTop();
+                }
+              },
+            ),
           ),
         ),
       );
@@ -67,7 +74,7 @@ class _HomePageState extends CommonPageState<HomePage>
         );
       }
     } else {
-      tabBar = const SizedBox(height: 6);
+      tabBar = const SizedBox(height: 8);
     }
     return Column(
       children: [
@@ -88,11 +95,11 @@ class _HomePageState extends CommonPageState<HomePage>
   }
 
   Widget customAppBar(ThemeData theme) {
-    const padding = EdgeInsets.fromLTRB(14, 6, 14, 0);
+    const padding = EdgeInsets.fromLTRB(14, 8, 14, 0);
     final child = Row(
       children: [
         searchBar(theme),
-        const SizedBox(width: 4),
+        const SizedBox(width: 8),
         msgBadge(_mainController),
         const SizedBox(width: 8),
         userAvatar(theme: theme, mainController: _mainController),
@@ -139,45 +146,65 @@ class _HomePageState extends CommonPageState<HomePage>
   }
 
   Widget searchBar(ThemeData theme) {
-    const borderRadius = BorderRadius.all(Radius.circular(25));
     return Expanded(
-      child: SizedBox(
-        height: 44,
-        child: Material(
-          borderRadius: borderRadius,
-          color: theme.colorScheme.onSecondaryContainer.withValues(alpha: 0.05),
-          child: InkWell(
-            borderRadius: borderRadius,
-            splashColor: theme.colorScheme.primaryContainer.withValues(
-              alpha: 0.3,
-            ),
-            onTap: () => Get.toNamed(
-              '/search',
-              parameters: _homeController.enableSearchWord
-                  ? {'hintText': _homeController.defaultSearch.value}
-                  : null,
-            ),
-            child: Row(
-              children: [
-                const SizedBox(width: 14),
-                Icon(
-                  Icons.search_outlined,
-                  color: theme.colorScheme.onSecondaryContainer,
-                  semanticLabel: '搜索',
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Obx(
-                    () => Text(
-                      _homeController.defaultSearch.value,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: theme.colorScheme.outline),
+      child: FrostedCard(
+        borderRadius: AppStoreSurfaces.pillRadius,
+        blur: 18,
+        color: AppStoreSurfaces.frostedColor(
+          theme.colorScheme,
+          lightOpacity: 0.9,
+          darkOpacity: 0.84,
+        ),
+        child: SizedBox(
+          height: 46,
+          child: Material(
+            type: MaterialType.transparency,
+            child: InkWell(
+              borderRadius: AppStoreSurfaces.pillRadius,
+              splashColor: theme.colorScheme.primaryContainer.withValues(
+                alpha: 0.24,
+              ),
+              onTap: () => Get.toNamed(
+                '/search',
+                parameters: _homeController.enableSearchWord
+                    ? {'hintText': _homeController.defaultSearch.value}
+                    : null,
+              ),
+              child: Row(
+                children: [
+                  const SizedBox(width: 8),
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primaryContainer.withValues(
+                        alpha: 0.75,
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.search_rounded,
+                      size: 18,
+                      color: theme.colorScheme.onPrimaryContainer,
+                      semanticLabel: 'Search',
                     ),
                   ),
-                ),
-                const SizedBox(width: 5),
-              ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Obx(
+                      () => Text(
+                        _homeController.defaultSearch.value,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.outline,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                ],
+              ),
             ),
           ),
         ),
@@ -191,64 +218,83 @@ Widget userAvatar({
   required MainController mainController,
 }) {
   return Semantics(
-    label: "我的",
+    label: 'Mine',
     child: Obx(
       () {
         if (mainController.accountService.isLogin.value) {
-          return Stack(
-            clipBehavior: .none,
-            children: [
-              NetworkImgLayer(
-                type: .avatar,
-                width: 34,
-                height: 34,
-                src: mainController.accountService.face.value,
+          return DecoratedBox(
+            decoration: BoxDecoration(
+              color: AppStoreSurfaces.frostedColor(
+                theme.colorScheme,
+                lightOpacity: 0.84,
+                darkOpacity: 0.8,
               ),
-              Positioned.fill(
-                child: Material(
-                  type: .transparency,
-                  child: InkWell(
-                    onTap: mainController.toMinePage,
-                    splashColor: theme.colorScheme.primaryContainer.withValues(
-                      alpha: 0.3,
-                    ),
-                    customBorder: const CircleBorder(),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: theme.colorScheme.outline.withValues(alpha: 0.08),
+              ),
+              boxShadow: AppStoreSurfaces.shadow(
+                theme.colorScheme,
+                opacity: 0.08,
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(3),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  NetworkImgLayer(
+                    type: .avatar,
+                    width: 34,
+                    height: 34,
+                    src: mainController.accountService.face.value,
                   ),
-                ),
+                  Positioned.fill(
+                    child: Material(
+                      type: MaterialType.transparency,
+                      child: InkWell(
+                        onTap: mainController.toMinePage,
+                        splashColor: theme.colorScheme.primaryContainer.withValues(
+                          alpha: 0.3,
+                        ),
+                        customBorder: const CircleBorder(),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    right: -4,
+                    bottom: -4,
+                    child: Obx(
+                      () => MineController.anonymity.value
+                          ? IgnorePointer(
+                              child: Container(
+                                padding: const EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: theme.colorScheme.secondaryContainer,
+                                ),
+                                child: Icon(
+                                  size: 14,
+                                  MdiIcons.incognito,
+                                  color: theme.colorScheme.onSecondaryContainer,
+                                ),
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                  ),
+                ],
               ),
-              Positioned(
-                right: -4,
-                bottom: -4,
-                child: Obx(
-                  () => MineController.anonymity.value
-                      ? IgnorePointer(
-                          child: Container(
-                            padding: const .all(2),
-                            decoration: BoxDecoration(
-                              shape: .circle,
-                              color: theme.colorScheme.secondaryContainer,
-                            ),
-                            child: Icon(
-                              size: 14,
-                              MdiIcons.incognito,
-                              color: theme.colorScheme.onSecondaryContainer,
-                            ),
-                          ),
-                        )
-                      : const SizedBox.shrink(),
-                ),
-              ),
-            ],
+            ),
           );
         }
-        return SizedBox(
-          width: 38,
-          height: 38,
-          child: IconButton(
-            tooltip: '点击登录',
+        return _toolbarBubble(
+          theme,
+          IconButton(
+            tooltip: 'Sign in',
             style: IconButton.styleFrom(
-              padding: .zero,
-              backgroundColor: theme.colorScheme.onInverseSurface,
+              padding: EdgeInsets.zero,
+              backgroundColor: Colors.transparent,
             ),
             onPressed: mainController.toMinePage,
             icon: Icon(
@@ -269,26 +315,52 @@ Widget msgBadge(MainController mainController) {
       if (mainController.accountService.isLogin.value) {
         final count = mainController.msgUnReadCount.value;
         final isNumBadge = mainController.msgBadgeMode == .number;
-        return IconButton(
-          tooltip: '消息',
-          onPressed: () {
-            mainController
-              ..msgUnReadCount.value = ''
-              ..lastCheckUnreadAt = DateTime.now().millisecondsSinceEpoch;
-            Get.toNamed('/whisper');
+        return Builder(
+          builder: (context) {
+            final theme = Theme.of(context);
+            return _toolbarBubble(
+              theme,
+              IconButton(
+                tooltip: 'Messages',
+                onPressed: () {
+                  mainController
+                    ..msgUnReadCount.value = ''
+                    ..lastCheckUnreadAt = DateTime.now().millisecondsSinceEpoch;
+                  Get.toNamed('/whisper');
+                },
+                icon: Badge(
+                  isLabelVisible:
+                      mainController.msgBadgeMode != .hidden && count.isNotEmpty,
+                  alignment: isNumBadge
+                      ? const Alignment(0.0, -0.85)
+                      : const Alignment(1.0, -0.85),
+                  label: isNumBadge && count.isNotEmpty ? Text(count) : null,
+                  child: const Icon(Icons.notifications_none),
+                ),
+              ),
+            );
           },
-          icon: Badge(
-            isLabelVisible:
-                mainController.msgBadgeMode != .hidden && count.isNotEmpty,
-            alignment: isNumBadge
-                ? const Alignment(0.0, -0.85)
-                : const Alignment(1.0, -0.85),
-            label: isNumBadge && count.isNotEmpty ? Text(count) : null,
-            child: const Icon(Icons.notifications_none),
-          ),
         );
       }
       return const SizedBox.shrink();
     },
+  );
+}
+
+Widget _toolbarBubble(ThemeData theme, Widget child) {
+  return FrostedCard(
+    borderRadius: AppStoreSurfaces.pillRadius,
+    blur: 16,
+    elevated: false,
+    color: AppStoreSurfaces.frostedColor(
+      theme.colorScheme,
+      lightOpacity: 0.88,
+      darkOpacity: 0.8,
+    ),
+    child: SizedBox(
+      width: 42,
+      height: 42,
+      child: child,
+    ),
   );
 }

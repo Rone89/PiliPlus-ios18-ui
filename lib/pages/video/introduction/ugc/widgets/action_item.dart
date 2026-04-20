@@ -1,3 +1,4 @@
+import 'package:PiliPlus/common/widgets/app_store_surface.dart';
 import 'package:PiliPlus/common/widgets/custom_arc.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:PiliPlus/utils/platform_utils.dart';
@@ -37,17 +38,19 @@ class ActionItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    late final primary = !expand && colorScheme.isLight
+    final primary = !expand && colorScheme.isLight
         ? colorScheme.inversePrimary
         : colorScheme.primary;
-    Widget child = Icon(
+    final iconColor = selectStatus ? primary : icon.color ?? colorScheme.outline;
+
+    Widget iconChild = Icon(
       selectStatus ? selectIcon!.icon! : icon.icon,
       size: 18,
-      color: selectStatus ? primary : icon.color ?? colorScheme.outline,
+      color: iconColor,
     );
 
     if (animation != null) {
-      child = Stack(
+      iconChild = Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.center,
         children: [
@@ -59,17 +62,58 @@ class ActionItem extends StatelessWidget {
               progress: -animation!.value,
             ),
           ),
-          child,
+          iconChild,
         ],
       );
     } else {
-      child = SizedBox.square(dimension: 28, child: child);
+      iconChild = SizedBox.square(dimension: 28, child: iconChild);
     }
 
-    child = Material(
-      type: .transparency,
+    final content = AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      padding: EdgeInsets.symmetric(
+        horizontal: expand ? 4 : 0,
+        vertical: expand ? 10 : 0,
+      ),
+      decoration: BoxDecoration(
+        borderRadius: AppStoreSurfaces.sectionRadius,
+        color: selectStatus
+            ? primary.withValues(alpha: 0.12)
+            : colorScheme.surfaceContainerHighest.withValues(alpha: 0.42),
+        border: Border.all(
+          color: selectStatus
+              ? primary.withValues(alpha: 0.16)
+              : colorScheme.outline.withValues(alpha: 0.08),
+        ),
+      ),
+      child: expand
+          ? Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: selectStatus
+                        ? primary.withValues(alpha: 0.12)
+                        : Colors.white.withValues(alpha: 0.22),
+                  ),
+                  child: Center(child: iconChild),
+                ),
+                const SizedBox(height: 8),
+                _buildText(theme),
+              ],
+            )
+          : Center(child: iconChild),
+    );
+
+    final child = Material(
+      type: MaterialType.transparency,
       child: InkWell(
-        borderRadius: const BorderRadius.all(Radius.circular(6)),
+        borderRadius: AppStoreSurfaces.sectionRadius,
         onTap: _isThumbsUp ? null : onTap,
         onLongPress: _isThumbsUp ? null : onLongPress,
         onSecondaryTap: PlatformUtils.isMobile || _isThumbsUp
@@ -78,14 +122,10 @@ class ActionItem extends StatelessWidget {
         onTapDown: _isThumbsUp ? (_) => onStartTriple!() : null,
         onTapUp: _isThumbsUp ? (_) => onCancelTriple!(true) : null,
         onTapCancel: _isThumbsUp ? onCancelTriple : null,
-        child: expand
-            ? Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [child, _buildText(theme)],
-              )
-            : child,
+        child: content,
       ),
     );
+
     return expand ? Expanded(child: child) : child;
   }
 
@@ -99,6 +139,7 @@ class ActionItem extends StatelessWidget {
             ? theme.colorScheme.primary
             : theme.colorScheme.outline,
         fontSize: theme.textTheme.labelSmall!.fontSize,
+        fontWeight: selectStatus ? FontWeight.w600 : FontWeight.w500,
       ),
     );
     if (hasText) {

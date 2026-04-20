@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:ui';
+
+import 'package:PiliPlus/common/widgets/app_store_surface.dart';
 import 'package:PiliPlus/utils/extension/theme_ext.dart';
 import 'package:flutter/material.dart';
 
@@ -85,53 +88,60 @@ class FloatingNavigationBar extends StatelessWidget {
         child: SizedBox(
           height: _kNavigationHeight,
           width: destinations.length * _kIndicatorWidth,
-          child: DecoratedBox(
-            decoration: ShapeDecoration(
-              color: ElevationOverlay.applySurfaceTint(
-                backgroundColor ??
-                    navigationBarTheme.backgroundColor ??
-                    defaults.backgroundColor!,
-                surfaceTintColor ??
-                    navigationBarTheme.surfaceTintColor ??
-                    defaults.surfaceTintColor,
-                elevation ??
-                    navigationBarTheme.elevation ??
-                    defaults.elevation!,
-              ),
-              shape: RoundedSuperellipseBorder(
-                side: defaults.borderSide,
-                borderRadius: _kBorderRadius,
-              ),
-            ),
-            child: Padding(
-              padding: _kIndicatorPadding,
-              child: Row(
-                crossAxisAlignment: .stretch,
-                children: <Widget>[
-                  for (int i = 0; i < destinations.length; i++)
-                    Expanded(
-                      child: _SelectableAnimatedBuilder(
-                        duration: animationDuration,
-                        isSelected: i == selectedIndex,
-                        builder: (context, animation) {
-                          return _NavigationDestinationInfo(
-                            index: i,
-                            selectedIndex: selectedIndex,
-                            totalNumberOfDestinations: destinations.length,
-                            selectedAnimation: animation,
-                            labelBehavior: effectiveLabelBehavior,
-                            indicatorColor: indicatorColor,
-                            indicatorShape: indicatorShape,
-                            overlayColor: overlayColor,
-                            onTap: _handleTap(i),
-                            labelTextStyle: labelTextStyle,
-                            labelPadding: labelPadding,
-                            child: destinations[i],
-                          );
-                        },
-                      ),
-                    ),
-                ],
+          child: ClipRRect(
+            borderRadius: _kBorderRadius,
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 26, sigmaY: 26),
+              child: DecoratedBox(
+                decoration: ShapeDecoration(
+                  color: ElevationOverlay.applySurfaceTint(
+                    backgroundColor ??
+                        navigationBarTheme.backgroundColor ??
+                        defaults.backgroundColor!,
+                    surfaceTintColor ??
+                        navigationBarTheme.surfaceTintColor ??
+                        defaults.surfaceTintColor,
+                    elevation ??
+                        navigationBarTheme.elevation ??
+                        defaults.elevation!,
+                  ),
+                  shadows: AppStoreSurfaces.shadow(Theme.of(context).colorScheme),
+                  shape: RoundedSuperellipseBorder(
+                    side: defaults.borderSide,
+                    borderRadius: _kBorderRadius,
+                  ),
+                ),
+                child: Padding(
+                  padding: _kIndicatorPadding,
+                  child: Row(
+                    crossAxisAlignment: .stretch,
+                    children: <Widget>[
+                      for (int i = 0; i < destinations.length; i++)
+                        Expanded(
+                          child: _SelectableAnimatedBuilder(
+                            duration: animationDuration,
+                            isSelected: i == selectedIndex,
+                            builder: (context, animation) {
+                              return _NavigationDestinationInfo(
+                                index: i,
+                                selectedIndex: selectedIndex,
+                                totalNumberOfDestinations: destinations.length,
+                                selectedAnimation: animation,
+                                labelBehavior: effectiveLabelBehavior,
+                                indicatorColor: indicatorColor,
+                                indicatorShape: indicatorShape,
+                                overlayColor: overlayColor,
+                                onTap: _handleTap(i),
+                                labelTextStyle: labelTextStyle,
+                                labelPadding: labelPadding,
+                                child: destinations[i],
+                              );
+                            },
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -725,11 +735,11 @@ class _NavigationBarDefaultsM3 extends NavigationBarThemeData {
   late final _textTheme = Theme.of(context).textTheme;
 
   BorderSide get borderSide => _colors.brightness.isDark
-      ? const BorderSide(color: Color(0x08FFFFFF))
-      : const BorderSide(color: Color(0x08000000));
+      ? const BorderSide(color: Color(0x16FFFFFF))
+      : const BorderSide(color: Color(0x0C000000));
 
   @override
-  Color? get backgroundColor => _colors.surfaceContainer;
+  Color? get backgroundColor => AppStoreSurfaces.frostedColor(_colors);
 
   @override
   Color? get shadowColor => Colors.transparent;
@@ -753,7 +763,9 @@ class _NavigationBarDefaultsM3 extends NavigationBarThemeData {
 
   @override
   Color? get indicatorColor =>
-      _colors.brightness.isDark ? _indicatorDark : _indicatorLight;
+      _colors.primaryContainer.withValues(
+        alpha: _colors.brightness.isDark ? 0.82 : 0.9,
+      );
 
   @override
   ShapeBorder? get indicatorShape => const StadiumBorder();
@@ -768,6 +780,7 @@ class _NavigationBarDefaultsM3 extends NavigationBarThemeData {
             : states.contains(WidgetState.selected)
             ? _colors.onSurface
             : _colors.onSurfaceVariant,
+        fontWeightDelta: states.contains(WidgetState.selected) ? 1 : 0,
       );
     });
   }
