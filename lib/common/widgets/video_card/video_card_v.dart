@@ -1,11 +1,11 @@
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/app_store_surface.dart';
-import 'package:PiliPlus/common\widgets/badge.dart';
-import 'package:PiliPlus/common\widgets/flutter/layout_builder.dart';
-import 'package:PiliPlus/common\widgets/image/image_save.dart';
-import 'package:PiliPlus/common\widgets/image/network_img_layer.dart';
-import 'package:PiliPlus/common\widgets/stat/stat.dart';
-import 'package:PiliPlus/common\widgets/video_popup_menu.dart';
+import 'package:PiliPlus/common/widgets/badge.dart';
+import 'package:PiliPlus/common/widgets/flutter/layout_builder.dart';
+import 'package:PiliPlus/common/widgets/image/image_save.dart';
+import 'package:PiliPlus/common/widgets/image/network_img_layer.dart';
+import 'package:PiliPlus/common/widgets/stat/stat.dart';
+import 'package:PiliPlus/common/widgets/video_popup_menu.dart';
 import 'package:PiliPlus/http/search.dart';
 import 'package:PiliPlus/models/common/badge_type.dart';
 import 'package:PiliPlus/models/common/stat_type.dart';
@@ -176,7 +176,7 @@ class VideoCardV extends StatelessWidget {
                                 type: PBadgeType.secondary,
                               ),
                             if (videoItem.goto == 'picture')
-                              const PBadge(
+                              PBadge(
                                 text: 'Dynamic',
                                 isStack: false,
                                 size: PBadgeSize.small,
@@ -184,7 +184,7 @@ class VideoCardV extends StatelessWidget {
                                 fontSize: 9,
                               ),
                             if (videoItem.isFollowed)
-                              const PBadge(
+                              PBadge(
                                 text: 'Following',
                                 isStack: false,
                                 size: PBadgeSize.small,
